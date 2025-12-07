@@ -1,10 +1,252 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <title>Diabetes Risk Prediction - Naïve Bayes</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-$END$
+<div class="page">
+
+    <!-- TOP NAVBAR -->
+    <nav class="top-nav">
+        <div class="nav-left">
+            <span class="nav-logo">Diabetes NB</span>
+        </div>
+        <div class="nav-links">
+            <a href="#overview">Overview</a>
+            <a href="#type1">Type 1</a>
+            <a href="#type2">Type 2</a>
+            <a href="#symptoms">Symptoms</a>
+            <a href="#risk-factors">Risk Factors</a>
+            <a href="#predict-section" class="nav-highlight">Go to Prediction ▶</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-text">
+            <h1>Diabetes Risk Prediction</h1>
+            <p class="subtitle">
+                Powered by Naïve Bayes &amp; Conditional Probability<br>
+                <span class="badge">Educational Decision-Support Tool</span>
+            </p>
+        </div>
+    </header>
+
+    <main class="main-layout">
+        <!-- LEFT: info + form -->
+        <section class="left-panel">
+
+            <!-- Diabetes info cards -->
+            <section class="info-grid">
+                <div id="overview" class="info-card">
+                    <h2>What is Diabetes?</h2>
+                    <p>
+                        Diabetes is a long-term condition where the body has difficulty managing
+                        blood sugar (glucose). Either the body does not make enough insulin or
+                        cannot use it properly.
+                    </p>
+                    <p>
+                        This tool uses patterns from a dataset to estimate your risk level.
+                        Always confirm results with laboratory tests and a qualified doctor.
+                    </p>
+                </div>
+
+                <div id="type1" class="info-card mini">
+                    <h3>Type 1 Diabetes</h3>
+                    <p>
+                        Often starts at a younger age. The body makes little or no insulin.
+                        People with type 1 need insulin injections for life and regular monitoring.
+                    </p>
+                </div>
+
+                <div id="type2" class="info-card mini">
+                    <h3>Type 2 Diabetes</h3>
+                    <p>
+                        More common in adults. The body becomes resistant to insulin or does
+                        not use it effectively. Linked to lifestyle, family history, and age.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Extra info: symptoms + risk factors -->
+            <section class="info-grid narrow">
+                <div id="symptoms" class="info-card mini">
+                    <h3>Common Symptoms</h3>
+                    <ul class="info-list">
+                        <li>Feeling very thirsty or hungry</li>
+                        <li>Frequent urination</li>
+                        <li>Unusual tiredness or weakness</li>
+                        <li>Unexplained weight loss</li>
+                        <li>Slow-healing wounds or frequent infections</li>
+                        <li>Blurred vision</li>
+                    </ul>
+                </div>
+
+                <div id="risk-factors" class="info-card mini">
+                    <h3>Risk Factors</h3>
+                    <ul class="info-list">
+                        <li>Family history of diabetes</li>
+                        <li>Overweight or obesity</li>
+                        <li>Lack of physical activity</li>
+                        <li>High blood pressure or cholesterol</li>
+                        <li>Age above 45 years</li>
+                        <li>History of gestational diabetes</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Input form -->
+            <section id="predict-section" class="card form-card">
+                <h2>Enter Your Details</h2>
+                <p class="form-note">
+                    The model assumes features are independent (Naïve Bayes independence assumption).
+                </p>
+                <form method="POST" class="grid-form">
+                    <div class="field">
+                        <label>Pregnancies</label>
+                        <input type="number" name="pregnancies" step="1" min="0" required>
+                    </div>
+
+                    <div class="field">
+                        <label>Glucose Level</label>
+                        <input type="number" name="glucose" step="1" min="0" required>
+                    </div>
+
+                    <div class="field">
+                        <label>Blood Pressure</label>
+                        <input type="number" name="blood_pressure" step="1" min="0" required>
+                    </div>
+
+                    <div class="field">
+                        <label>Skin Thickness</label>
+                        <input type="number" name="skin_thickness" step="1" min="0" required>
+                    </div>
+
+                    <div class="field">
+                        <label>Insulin</label>
+                        <input type="number" name="insulin" step="1" min="0" required>
+                    </div>
+
+                    <div class="field">
+                        <label>BMI</label>
+                        <input type="number" name="bmi" step="0.1" min="0" required>
+                    </div>
+
+                    <div class="field">
+                        <label>Diabetes Pedigree Function</label>
+                        <input type="number" name="dpf" step="0.01" min="0" required>
+                    </div>
+
+                    <div class="field">
+                        <label>Age</label>
+                        <input type="number" name="age" step="1" min="0" required>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">
+                            🔍 Predict Risk
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </section>
+
+        <!-- RIGHT: prediction + prescription -->
+        <section class="right-panel">
+            {% if prediction %}
+                <!-- Prediction Card -->
+                <section class="card result-card">
+                    <div class="result-header">
+                        <h2>Prediction Result</h2>
+                        {% if risk_level_class %}
+                            <span class="risk-chip {{ risk_level_class }}">{{ prediction }}</span>
+                        {% else %}
+                            <span class="risk-chip">{{ prediction }}</span>
+                        {% endif %}
+                    </div>
+
+                    {% if probability %}
+                        <div class="probability-wrapper">
+                            <div class="probability-bar">
+                                <div class="probability-fill {{ risk_level_class }}"
+                                     style="width: {{ probability }}%;"></div>
+                            </div>
+                            <p class="probability-label">
+                                Model confidence: <strong>{{ probability }}%</strong>
+                            </p>
+                        </div>
+                    {% endif %}
+
+                    <button type="button" class="link-button" data-toggle="details-section">
+                        Show explanation of Naïve Bayes
+                    </button>
+                    <div id="details-section" class="details hidden">
+                        <p>
+                            This prediction is generated using the Naïve Bayes classifier.
+                            The model learns <strong>conditional probabilities</strong> from the dataset,
+                            assuming each feature (e.g., glucose, BMI, age) is
+                            <strong>independent</strong> given the class (diabetic / non-diabetic).
+                        </p>
+                        <p>
+                            It applies Bayes’ theorem:
+                            P(Class | Features) ∝ P(Features | Class) × P(Class),
+                            and selects the class with the higher probability.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- Interactive “Prescription” / Next Steps -->
+                <section class="card advice-card">
+                    <div class="advice-header">
+                        <h2>Personalised Suggestions</h2>
+                        {% if advice_title %}
+                            <p class="advice-title">{{ advice_title }}</p>
+                        {% endif %}
+                    </div>
+
+                    <button type="button" class="link-button" data-toggle="advice-details">
+                        Show / Hide suggestions
+                    </button>
+
+                    <ul id="advice-details" class="advice-list hidden">
+                        {% for point in advice_points %}
+                            <li>{{ point }}</li>
+                        {% endfor %}
+                    </ul>
+
+                    <p class="disclaimer">
+                        ⚠️ This tool is for learning and awareness only.
+                        It does <strong>not</strong> replace medical tests or a doctor’s diagnosis.
+                    </p>
+                </section>
+            {% else %}
+                <section class="card placeholder-card">
+                    <h2>No prediction yet</h2>
+                    <p>
+                        Read the basic information on the left, then scroll or use
+                        the <strong>“Go to Prediction”</strong> button in the top navigation
+                        to enter your details and view your risk.
+                    </p>
+                </section>
+            {% endif %}
+        </section>
+    </main>
+</div>
+
+<script>
+    // Simple toggle for interactive sections
+    document.addEventListener("DOMContentLoaded", function () {
+        const toggles = document.querySelectorAll("[data-toggle]");
+        toggles.forEach(btn => {
+            btn.addEventListener("click", () => {
+                const targetId = btn.getAttribute("data-toggle");
+                const target = document.getElementById(targetId);
+                if (!target) return;
+                target.classList.toggle("hidden");
+            });
+        });
+    });
+</script>
 </body>
 </html>
